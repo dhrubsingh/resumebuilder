@@ -53,7 +53,7 @@ app.post('/compile', async (req, res) => {
 
     // Compile LaTeX to PDF
     await new Promise((resolve, reject) => {
-        const pdflatexPath = '/Library/TeX/texbin/pdflatex';
+        const pdflatexPath = process.env.PDFLATEX_PATH || 'pdflatex';
         const process = exec(
           `${pdflatexPath} -interaction=nonstopmode -output-directory=${workDir} ${texFile}`,
           (error, stdout, stderr) => {
