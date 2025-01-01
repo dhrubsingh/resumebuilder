@@ -31,11 +31,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Get pdflatex path
 let pdflatexPath;
 try {
-  pdflatexPath = '/usr/local/bin/pdflatex';
+  pdflatexPath = '/opt/render/project/texlive/bin/x86_64-linux/pdflatex';
   console.log('Using pdflatex at:', pdflatexPath);
 } catch (error) {
   console.error('Error finding pdflatex:', error);
-  process.exit(1);  // Exit if we can't find pdflatex
+  process.exit(1);
 }
 
 // Routes
