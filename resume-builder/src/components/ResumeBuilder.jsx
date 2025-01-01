@@ -7,7 +7,7 @@ import EducationForm from './EducationForm';
 import ExperienceForm from './ExperienceForm';
 import AwardsForm from './AwardsForm';
 import SkillsForm from './SkillsForm';
-import LatexPreview from './LatexPreview';
+import LatexPreview from './LateXPreview';
 import ResumePreview from './ResumePreview';
 
 const ResumeBuilder = () => {
