@@ -14,11 +14,10 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
-  methods: ['POST', 'GET'],
-  allowedHeaders: ['Content-Type'],
-}));
-app.use(bodyParser.json());
+    origin: ['https://resumebuilder-givmxabei-dhrubsinghs-projects.vercel.app', process.env.FRONTEND_URL].filter(Boolean),
+    methods: ['POST', 'GET'],
+    allowedHeaders: ['Content-Type'],
+  }));
 
 // Update the temp directory creation
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

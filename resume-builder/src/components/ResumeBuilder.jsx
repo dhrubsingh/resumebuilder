@@ -199,14 +199,14 @@ ${formData.awards.map(award => `
   const handleGeneratePDF = async () => {
     try {
       const latex = generateLatex();
-      const response = await fetch('http://localhost:3001/compile', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/compile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ latex }),
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to generate PDF');
       }
