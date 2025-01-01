@@ -3,35 +3,58 @@
 echo "Current user: $(whoami)"
 echo "Current directory: $(pwd)"
 
-# Create the installation directory
-TEXLIVE_DIR="/opt/texlive"
-sudo mkdir -p $TEXLIVE_DIR
-sudo chown -R $USER:$USER $TEXLIVE_DIR
+# Create a temporary directory for downloading TeX Live
+TEMP_DIR="/tmp/texlive"
+mkdir -p $TEMP_DIR
+cd $TEMP_DIR
 
-echo "Installing TeX Live..."
-# Install required packages
-sudo apt-get update
-sudo apt-get install -y \
-    wget \
-    perl \
-    fontconfig \
-    texlive-base \
-    texlive-latex-base \
-    texlive-latex-extra \
-    texlive-fonts-recommended
+# Download TeX Live installer
+wget https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
+tar -xzf install-tl-unx.tar.gz
+cd install-tl-*
 
-# Verify pdflatex installation and get its path
-PDFLATEX_PATH=$(which pdflatex)
-echo "pdflatex path: $PDFLATEX_PATH"
-$PDFLATEX_PATH --version
+# Create a configuration file for non-interactive installation
+cat > texlive.profile << EOF
+selected_scheme scheme-basic
+TEXDIR /opt/render/texlive
+TEXMFCONFIG ~/.texlive/texmf-config
+TEXMFHOME ~/texmf
+TEXMFLOCAL /opt/render/texlive/texmf-local
+TEXMFSYSCONFIG /opt/render/texlive/texmf-config
+TEXMFSYSVAR /opt/render/texlive/texmf-var
+TEXMFVAR ~/.texlive/texmf-var
+binary_x86_64-linux 1
+instopt_adjustpath 1
+instopt_adjustrepo 1
+instopt_letter 0
+instopt_portable 0
+instopt_write18_restricted 1
+tlpdbopt_autobackup 0
+tlpdbopt_create_formats 1
+tlpdbopt_generate_updmap 0
+tlpdbopt_install_docfiles 0
+tlpdbopt_install_srcfiles 0
+EOF
 
-# Create a symbolic link to ensure the path is consistent
-sudo ln -sf $PDFLATEX_PATH /usr/local/bin/pdflatex
+# Run installation
+./install-tl --profile=texlive.profile
 
-# Update server.js to use the new path
-sed -i "s|pdflatexPath = .*|pdflatexPath = '/usr/local/bin/pdflatex';|" server.js
+# Add TeX Live to PATH
+export PATH="/opt/render/texlive/bin/x86_64-linux:$PATH"
+
+# Install required LaTeX packages
+tlmgr install latex-bin latex xetex
+
+# Create symbolic link
+mkdir -p /usr/local/bin
+ln -sf /opt/render/texlive/bin/x86_64-linux/pdflatex /usr/local/bin/pdflatex
+
+# Verify installation
+which pdflatex
+pdflatex --version
 
 # Install Node.js dependencies
+cd /opt/render/project/src
 echo "Installing Node.js dependencies..."
 npm install || { echo "Failed to install Node.js dependencies"; exit 1; }
 

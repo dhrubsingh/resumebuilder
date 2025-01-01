@@ -1,1 +1,1 @@
-export PATH="/opt/render/.texlive/bin/x86_64-linux:$PATH" 
+export PATH="/opt/render/texlive/bin/x86_64-linux:$PATH"

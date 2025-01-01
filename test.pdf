@@ -1,1 +1,1 @@
-{"error":"PDF generation failed","details":"PDF compilation failed: /bin/sh: 1: /opt/render/.texlive/bin/x86_64-linux/pdflatex: not found\n"}
+{"error":"PDF generation failed","details":"PDF compilation failed: /bin/sh: 1: /usr/local/bin/pdflatex: not found\n"}
