@@ -1,7 +1,7 @@
 // server.js
 import express from 'express';
 import cors from 'cors';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -27,6 +27,16 @@ app.use(cors({
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Get pdflatex path
+let pdflatexPath;
+try {
+  pdflatexPath = execSync('which pdflatex').toString().trim();
+  console.log('Found pdflatex at:', pdflatexPath);
+} catch (error) {
+  console.error('Error finding pdflatex:', error);
+  pdflatexPath = 'pdflatex';
+}
 
 // Routes
 app.get('/', (req, res) => {
@@ -59,8 +69,9 @@ app.post('/compile', async (req, res) => {
     console.log('Working directory:', workDir);
     console.log('TeX file path:', texFile);
 
-    const pdflatexPath = process.env.PDFLATEX_PATH || 'pdflatex';
-    console.log('Using pdflatex path:', pdflatexPath); // Add this line
+    const pdflatexPath = process.env.PDFLATEX_PATH || pdflatexPath;
+    console.log('Using pdflatex path:', pdflatexPath);
+    
     await new Promise((resolve, reject) => {
       exec(
         `${pdflatexPath} -interaction=nonstopmode -output-directory=${workDir} ${texFile}`,
