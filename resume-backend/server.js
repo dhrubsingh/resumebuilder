@@ -60,6 +60,7 @@ app.post('/compile', async (req, res) => {
     console.log('TeX file path:', texFile);
 
     const pdflatexPath = process.env.PDFLATEX_PATH || 'pdflatex';
+    console.log('Using pdflatex path:', pdflatexPath); // Add this line
     await new Promise((resolve, reject) => {
       exec(
         `${pdflatexPath} -interaction=nonstopmode -output-directory=${workDir} ${texFile}`,
