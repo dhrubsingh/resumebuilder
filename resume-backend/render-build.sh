@@ -17,7 +17,7 @@ cd install-tl-20* || exit 1
 
 # Create minimal profile
 cat > texlive.profile << EOF
-selected_scheme scheme-basic
+selected_scheme scheme-medium
 TEXDIR $TEXLIVE_DIR
 TEXMFCONFIG $TEXMF_HOME
 TEXMFHOME $TEXMF_HOME
@@ -44,11 +44,16 @@ perl ./install-tl --profile=texlive.profile
 # Add TeX Live to PATH
 export PATH="$TEXLIVE_DIR/bin/x86_64-linux:$PATH"
 
-# Write fullpage.sty directly
+# Write fullpage.sty directly with options support
 echo "Creating fullpage.sty..."
 cat > "$TEXMF_HOME/tex/latex/local/fullpage.sty" << 'EOF'
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{fullpage}[2024/01/01 v1.0 Simple full page package]
+
+\DeclareOption{empty}{}  % Add support for 'empty' option
+\DeclareOption*{\PackageWarning{fullpage}{Unknown option `\CurrentOption'}}
+\ProcessOptions\relax
+
 \setlength{\textwidth}{\paperwidth}
 \addtolength{\textwidth}{-2in}
 \setlength{\oddsidemargin}{0pt}
@@ -85,7 +90,10 @@ $TEXLIVE_DIR/bin/x86_64-linux/tlmgr install \
     url \
     listings \
     tools \
-    fancyhdr
+    marvosym \
+    fancyhdr \
+    color \
+    dvipsnames
 
 # Update TeX database
 echo "Updating TeX database..."
@@ -96,8 +104,10 @@ echo "Testing LaTeX installation..."
 TEST_DIR=$(mktemp -d)
 cat > "$TEST_DIR/test.tex" << 'EOF'
 \documentclass{article}
-\usepackage{fullpage}
+\usepackage[empty]{fullpage}
 \usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
 \begin{document}
 Test document
 \end{document}
@@ -122,9 +132,5 @@ rm -rf "$TEST_DIR"
 cd /opt/render/project/src/resume-backend || exit 1
 echo "Installing Node.js dependencies..."
 npm install || { echo "Failed to install Node.js dependencies"; exit 1; }
-
-# Create symbolic link for pdflatex
-mkdir -p /usr/local/bin || true
-ln -sf "$TEXLIVE_DIR/bin/x86_64-linux/pdflatex" /usr/local/bin/pdflatex || true
 
 echo "Build script completed successfully"
