@@ -31,11 +31,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Get pdflatex path
 let pdflatexPath;
 try {
-  pdflatexPath = execSync('which pdflatex').toString().trim();
-  console.log('Found pdflatex at:', pdflatexPath);
+  pdflatexPath = '/opt/render/.texlive/bin/x86_64-linux/pdflatex';
+  console.log('Using pdflatex at:', pdflatexPath);
 } catch (error) {
   console.error('Error finding pdflatex:', error);
-  pdflatexPath = 'pdflatex';
+  process.exit(1);  // Exit if we can't find pdflatex
 }
 
 // Routes
@@ -68,10 +68,8 @@ app.post('/compile', async (req, res) => {
 
     console.log('Working directory:', workDir);
     console.log('TeX file path:', texFile);
-
-    const pdflatexPath = process.env.PDFLATEX_PATH || pdflatexPath;
     console.log('Using pdflatex path:', pdflatexPath);
-    
+
     await new Promise((resolve, reject) => {
       exec(
         `${pdflatexPath} -interaction=nonstopmode -output-directory=${workDir} ${texFile}`,
