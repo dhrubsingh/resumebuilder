@@ -19,6 +19,10 @@ app.use(cors({
     allowedHeaders: ['Content-Type'],
   }));
 
+// Add these lines
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true }));
+
 // Update the temp directory creation
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const tempDir = path.join(__dirname, 'temp');

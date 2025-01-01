@@ -208,7 +208,8 @@ ${formData.awards.map(award => `
       });
   
       if (!response.ok) {
-        throw new Error('Failed to generate PDF');
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to generate PDF');
       }
 
       const pdfBlob = await response.blob();
@@ -222,7 +223,7 @@ ${formData.awards.map(award => `
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      alert(error.message);
     }
   };
 
