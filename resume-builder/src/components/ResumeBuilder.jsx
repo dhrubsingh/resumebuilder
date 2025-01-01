@@ -1,7 +1,7 @@
-// ResumeBuilder.jsx
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Loader } from 'lucide-react';
 import PersonalInfoForm from './PersonalInfoForm';
 import EducationForm from './EducationForm';
 import ExperienceForm from './ExperienceForm';
@@ -11,6 +11,7 @@ import LatexPreview from './LateXPreview';
 import ResumePreview from './ResumePreview';
 
 const ResumeBuilder = () => {
+  const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState({
     personalInfo: {
       name: '',
@@ -198,11 +199,11 @@ ${formData.awards.map(award => `
 
   const handleGeneratePDF = async () => {
     try {
+      setIsGenerating(true);
       console.log('Attempting to generate PDF...');
-      console.log('API URL:', import.meta.env.VITE_API_URL); // Add this line
-      const latex = generateLatex();
+      console.log('API URL:', import.meta.env.VITE_API_URL);
       
-      // Add this log to see the LaTeX content
+      const latex = generateLatex();
       console.log('LaTeX content length:', latex.length);
       
       const response = await fetch(`${import.meta.env.VITE_API_URL}/compile`, {
@@ -215,7 +216,7 @@ ${formData.awards.map(award => `
   
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Server response:', errorData); // Add this line
+        console.error('Server response:', errorData);
         throw new Error(errorData.details || 'Failed to generate PDF');
       }
   
@@ -231,6 +232,8 @@ ${formData.awards.map(award => `
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert(error.message);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -260,8 +263,17 @@ ${formData.awards.map(award => `
           <Button 
             onClick={handleGeneratePDF} 
             variant="outline"
+            disabled={isGenerating}
+            className="min-w-[120px]"
           >
-            Generate PDF
+            {isGenerating ? (
+              <span className="flex items-center gap-2">
+                <Loader className="h-4 w-4 animate-spin" />
+                Generating...
+              </span>
+            ) : (
+              'Generate PDF'
+            )}
           </Button>
         </div>
       </div>
