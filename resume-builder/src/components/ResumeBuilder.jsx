@@ -1,8 +1,14 @@
+// ResumeBuilder.jsx
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import PersonalInfoForm from './PersonalInfoForm';
+import EducationForm from './EducationForm';
+import ExperienceForm from './ExperienceForm';
+import AwardsForm from './AwardsForm';
+import SkillsForm from './SkillsForm';
+import LatexPreview from './LatexPreview';
+import ResumePreview from './ResumePreview';
 
 const ResumeBuilder = () => {
   const [formData, setFormData] = useState({
@@ -36,28 +42,32 @@ const ResumeBuilder = () => {
     skills: {
       languages: '',
       software: '',
-      competencies: ''
+      competencies: '',
+      certifications: ''
     }
   });
 
   const [showLatex, setShowLatex] = useState(false);
 
-  const handlePersonalInfoChange = (field, value) => {
+  const handleFormUpdate = (section, data) => {
     setFormData(prev => ({
       ...prev,
-      personalInfo: {
-        ...prev.personalInfo,
-        [field]: value
-      }
+      [section]: data
     }));
   };
 
   const generateLatex = () => {
-    return `\\documentclass[letterpaper,11pt]{article}
+    return `%-------------------------
+% Resume in Latex
+% Based off of previous template
+%------------------------
+
+\\documentclass[letterpaper,11pt]{article}
 
 \\usepackage{latexsym}
 \\usepackage[empty]{fullpage}
 \\usepackage{titlesec}
+\\usepackage{marvosym}
 \\usepackage[usenames,dvipsnames]{color}
 \\usepackage{verbatim}
 \\usepackage{enumitem}
@@ -65,6 +75,7 @@ const ResumeBuilder = () => {
 \\usepackage{fancyhdr}
 \\usepackage[english]{babel}
 \\usepackage{tabularx}
+\\input{glyphtounicode}
 
 \\pagestyle{fancy}
 \\fancyhf{}
@@ -79,29 +90,107 @@ const ResumeBuilder = () => {
 \\addtolength{\\topmargin}{-.5in}
 \\addtolength{\\textheight}{1.0in}
 
+\\urlstyle{same}
+\\raggedbottom
+\\raggedright
+\\setlength{\\tabcolsep}{0in}
+
+% Sections formatting
+\\titleformat{\\section}{
+  \\vspace{-4pt}\\scshape\\raggedright\\large
+}{}{0em}{}[\\color{black}\\titlerule \\vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\\newcommand{\\resumeItem}[1]{
+  \\item\\small{
+    {#1 \\vspace{-2pt}}
+  }
+}
+
+\\newcommand{\\resumeSubheading}[4]{
+  \\vspace{-2pt}\\item
+    \\begin{tabular*}{0.97\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
+      \\textbf{#1} & #2 \\\\
+      \\textit{\\small#3} & \\textit{\\small #4} \\\\
+    \\end{tabular*}\\vspace{-7pt}
+}
+
+\\newcommand{\\resumeProjectHeading}[2]{
+    \\item
+    \\begin{tabular*}{0.97\\textwidth}{l@{\\extracolsep{\\fill}}r}
+      \\small#1 & #2 \\\\
+    \\end{tabular*}\\vspace{-7pt}
+}
+
+\\newcommand{\\resumeSubHeadingListStart}{\\begin{itemize}[leftmargin=0.15in, label={}]}
+\\newcommand{\\resumeSubHeadingListEnd}{\\end{itemize}}
+\\newcommand{\\resumeItemListStart}{\\begin{itemize}[label=$\\vcenter{\\hbox{\\tiny$\\bullet$}}$]}
+\\newcommand{\\resumeItemListEnd}{\\end{itemize}\\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \\begin{document}
 
 %----------HEADING----------
 \\begin{center}
-    \\textbf{\\Huge \\scshape ${formData.personalInfo.name || 'Your Name'}} \\\\ \\vspace{1pt}
+    \\textbf{\\Huge \\scshape ${formData.personalInfo.name}} \\\\ \\vspace{1pt}
     \\small ${[
       formData.personalInfo.location,
-      formData.personalInfo.phone,
-      formData.personalInfo.email,
-      formData.personalInfo.linkedin
+      `\\href{tel:${formData.personalInfo.phone}}{${formData.personalInfo.phone}}`,
+      `\\href{mailto:${formData.personalInfo.email}}{${formData.personalInfo.email}}`,
+      `\\href{${formData.personalInfo.linkedin}}{\\underline{${formData.personalInfo.linkedin.replace('https://', '')}}}`
     ].filter(Boolean).join(' $|$ ')}
 \\end{center}
 
 %-----------EDUCATION-----------
 \\section{Education}
-\\begin{itemize}[leftmargin=0.15in, label={}]
+\\resumeSubHeadingListStart
 ${formData.education.map(edu => `
-    \\item
-    \\begin{tabular*}{0.97\\textwidth}[t]{l@{\\extracolsep{\\fill}}r}
-      \\textbf{${edu.school || '(School Name)'}} & ${edu.location || '(Location)'} \\\\
-      ${edu.degree || '(Degree)'} & ${edu.date || '(Date)'} \\\\
-    \\end{tabular*}\\vspace{-2pt}
+    \\resumeSubheading
+      {${edu.school}}{${edu.location}}
+      {${edu.degree}}{${edu.date}}
+      ${edu.achievements.some(Boolean) ? `\\resumeItemListStart
+        ${edu.achievements.filter(Boolean).map(achievement => `\\resumeItem{${achievement}}`).join('\n        ')}
+      \\resumeItemListEnd` : ''}
 `).join('\n')}
+\\resumeSubHeadingListEnd
+
+%-----------EXPERIENCE-----------
+\\section{Experience}
+\\resumeSubHeadingListStart
+${formData.experience.map(exp => `
+    \\resumeSubheading
+      {${exp.company}}{${exp.date}}
+      {${exp.title}}{${exp.location}}
+      ${exp.achievements.some(Boolean) ? `\\resumeItemListStart
+        ${exp.achievements.filter(Boolean).map(achievement => `\\resumeItem{${achievement}}`).join('\n        ')}
+      \\resumeItemListEnd` : ''}
+`).join('\n')}
+\\resumeSubHeadingListEnd
+
+%-----------LEADERSHIP \\& AWARDS-----------
+\\section{Leadership \\& Awards}
+\\resumeSubHeadingListStart
+${formData.awards.map(award => `
+    \\resumeProjectHeading
+        {\\textbf{${award.title}} $|$ \\emph{${award.organization}}}{${award.year}}`
+).join('\n')}
+\\resumeSubHeadingListEnd
+
+%-----------SKILLS-----------
+\\section{Technical Skills}
+\\begin{itemize}[leftmargin=0.15in, label={}]
+    \\small{\\item{
+     \\textbf{Languages}{: ${formData.skills.languages}} \\\\
+     \\textbf{Software}{: ${formData.skills.software}} \\\\
+     \\textbf{Core Competencies}{: ${formData.skills.competencies}} \\\\
+     \\textbf{}
+    }}
 \\end{itemize}
 
 \\end{document}`;
@@ -110,8 +199,6 @@ ${formData.education.map(edu => `
   const handleGeneratePDF = async () => {
     try {
       const latex = generateLatex();
-      console.log('Sending LaTeX:', latex); // Debug log
-      
       const response = await fetch('http://localhost:3001/compile', {
         method: 'POST',
         headers: {
@@ -121,8 +208,7 @@ ${formData.education.map(edu => `
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || 'Failed to generate PDF');
+        throw new Error('Failed to generate PDF');
       }
 
       const pdfBlob = await response.blob();
@@ -140,45 +226,9 @@ ${formData.education.map(edu => `
     }
   };
 
-  const ResumePreview = () => {
-    const { personalInfo, education } = formData;
-    
-    return (
-      <div className="min-h-[600px] bg-white p-8 shadow rounded">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-2">{personalInfo.name || 'Your Name'}</h1>
-          <div className="text-sm text-gray-600">
-            {[
-              personalInfo.location,
-              personalInfo.phone,
-              personalInfo.email,
-              personalInfo.linkedin
-            ].filter(Boolean).join(' | ') || 'Location | Phone | Email | LinkedIn'}
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-lg font-bold border-b-2 border-gray-300 mb-3">Education</h2>
-          {education.map((edu, index) => (
-            <div key={index} className="mb-4">
-              <div className="flex justify-between items-baseline">
-                <span className="font-semibold">{edu.school || '(School Name)'}</span>
-                <span className="text-gray-600">{edu.location || '(Location)'}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>{edu.degree || '(Degree)'}</span>
-                <span className="text-gray-600">{edu.date || '(Date)'}</span>
-              </div>
-              {edu.gpa && <div className="text-sm text-gray-600 mt-1">GPA: {edu.gpa}</div>}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="w-full max-w-7xl mx-auto bg-gray-50 min-h-screen p-6">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Resume Builder</h1>
         <div className="flex items-center gap-4">
@@ -208,6 +258,7 @@ ${formData.education.map(edu => `
         </div>
       </div>
 
+      {/* Main Content */}
       <div className="grid grid-cols-2 gap-6">
         {/* Form Section */}
         <div className="bg-white rounded-lg shadow">
@@ -221,60 +272,38 @@ ${formData.education.map(edu => `
             </TabsList>
 
             <TabsContent value="personal">
-              <Card>
-                <CardContent className="space-y-4 pt-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Full Name
-                    </label>
-                    <Input
-                      value={formData.personalInfo.name}
-                      onChange={(e) => handlePersonalInfoChange('name', e.target.value)}
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Location
-                    </label>
-                    <Input
-                      value={formData.personalInfo.location}
-                      onChange={(e) => handlePersonalInfoChange('location', e.target.value)}
-                      placeholder="City, State"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone
-                    </label>
-                    <Input
-                      value={formData.personalInfo.phone}
-                      onChange={(e) => handlePersonalInfoChange('phone', e.target.value)}
-                      placeholder="(123) 456-7890"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email
-                    </label>
-                    <Input
-                      value={formData.personalInfo.email}
-                      onChange={(e) => handlePersonalInfoChange('email', e.target.value)}
-                      placeholder="john.doe@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      LinkedIn
-                    </label>
-                    <Input
-                      value={formData.personalInfo.linkedin}
-                      onChange={(e) => handlePersonalInfoChange('linkedin', e.target.value)}
-                      placeholder="linkedin.com/in/johndoe"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              <PersonalInfoForm 
+                data={formData.personalInfo}
+                onUpdate={(data) => handleFormUpdate('personalInfo', data)}
+              />
+            </TabsContent>
+
+            <TabsContent value="education">
+              <EducationForm 
+                data={formData.education}
+                onUpdate={(data) => handleFormUpdate('education', data)}
+              />
+            </TabsContent>
+
+            <TabsContent value="experience">
+              <ExperienceForm 
+                data={formData.experience}
+                onUpdate={(data) => handleFormUpdate('experience', data)}
+              />
+            </TabsContent>
+
+            <TabsContent value="awards">
+              <AwardsForm 
+                data={formData.awards}
+                onUpdate={(data) => handleFormUpdate('awards', data)}
+              />
+            </TabsContent>
+
+            <TabsContent value="skills">
+              <SkillsForm 
+                data={formData.skills}
+                onUpdate={(data) => handleFormUpdate('skills', data)}
+              />
             </TabsContent>
           </Tabs>
         </div>
@@ -283,11 +312,9 @@ ${formData.education.map(edu => `
         <div className="bg-white rounded-lg shadow">
           <div className="p-6">
             {showLatex ? (
-              <pre className="text-xs whitespace-pre-wrap overflow-auto h-[600px] font-mono bg-gray-50 p-4 rounded">
-                {generateLatex()}
-              </pre>
+              <LatexPreview formData={formData} />
             ) : (
-              <ResumePreview />
+              <ResumePreview formData={formData} />
             )}
           </div>
         </div>
