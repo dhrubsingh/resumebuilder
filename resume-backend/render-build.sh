@@ -11,11 +11,11 @@ cd $TEMP_DIR || exit 1
 # Download TeX Live installer
 wget https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
 tar -xzf install-tl-unx.tar.gz
-cd install-tl-20* || exit 1  # Use wildcard to match the extracted directory
+cd install-tl-20* || exit 1
 
 # Create a configuration file for non-interactive installation
 cat > texlive.profile << EOF
-selected_scheme scheme-basic
+selected_scheme scheme-medium
 TEXDIR /opt/render/project/texlive
 TEXMFCONFIG \$TEXMFSYSCONFIG
 TEXMFHOME \$TEXMFLOCAL
@@ -41,6 +41,24 @@ perl ./install-tl --profile=texlive.profile
 
 # Add TeX Live to PATH
 export PATH="/opt/render/project/texlive/bin/x86_64-linux:$PATH"
+
+# Install additional required packages
+/opt/render/project/texlive/bin/x86_64-linux/tlmgr update --self
+/opt/render/project/texlive/bin/x86_64-linux/tlmgr install \
+    collection-latex \
+    collection-latexrecommended \
+    collection-latexextra \
+    collection-fontsrecommended \
+    collection-basicfonts \
+    collection-binextra \
+    fullpage \
+    titlesec \
+    enumitem \
+    hyperref \
+    geometry \
+    fancyhdr \
+    fontawesome5 \
+    xcolor
 
 # Go back to the project directory
 cd /opt/render/project/src/resume-backend || exit 1
