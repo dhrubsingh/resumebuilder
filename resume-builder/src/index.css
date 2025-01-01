@@ -1,3 +1,7 @@
+/* Import Computer Modern fonts */
+@import url('https://cdn.jsdelivr.net/npm/computer-modern-latex-font@1.0.0/fonts/Serif/cmun-serif.css');
+@import url('https://cdn.jsdelivr.net/npm/computer-modern-latex-font@1.0.0/fonts/Roman/cmun-roman.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,11 +9,54 @@
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -moz-osx-font-smoothing: grayscaled;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   background-color: white;
+}
+
+/* Custom styles for resume preview */
+.latex-serif {
+  font-family: 'Computer Modern Serif', serif;
+}
+
+.latex-roman {
+  font-family: 'Computer Modern Roman', serif;
+}
+
+/* LaTeX-specific text styles */
+.latex-heading {
+  @apply uppercase tracking-wide;
+  font-family: 'Computer Modern Roman', serif;
+  font-variant: small-caps;
+}
+
+.latex-section {
+  font-family: 'Computer Modern Roman', serif;
+  border-bottom: 0.8px solid black;
+  padding-bottom: 2px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-variant: small-caps;
+  font-size: 14pt;
+  letter-spacing: 0.05em;
+}
+
+.latex-bullet {
+  width: 3.5px;
+  height: 3.5px;
+  background-color: black;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+/* LaTeX-specific spacing */
+.latex-tight {
+  line-height: 1.15;
 }
