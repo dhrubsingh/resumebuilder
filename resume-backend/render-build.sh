@@ -11,7 +11,10 @@ export PATH="$HOME/.local/bin:$PATH"
 echo "Downloading TeXLive installer..."
 wget https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
 tar -xzf install-tl-unx.tar.gz
-cd install-tl-*
+
+# Find the extracted directory and cd into it
+INSTALL_DIR=$(find . -maxdepth 1 -type d -name "install-tl-*" | head -n 1)
+cd "$INSTALL_DIR" || exit 1
 
 # Create a texlive.profile file
 cat > texlive.profile << EOF
@@ -28,7 +31,7 @@ option_src 0
 EOF
 
 # Install TeXLive with the profile
-./install-tl --profile=texlive.profile
+perl ./install-tl --profile=texlive.profile
 
 # Add TeXLive to PATH
 export PATH="$HOME/.texlive/bin/x86_64-linux:$PATH"
@@ -39,6 +42,7 @@ pdflatex --version || { echo "pdflatex version check failed"; exit 1; }
 
 # Install Node.js dependencies
 echo "Installing Node.js dependencies..."
+cd ..
 npm install || { echo "Failed to install Node.js dependencies"; exit 1; }
 
 echo "Build script completed successfully"
