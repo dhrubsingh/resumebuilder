@@ -8,6 +8,10 @@ import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 
+// Set TeX environment variables
+process.env.TEXMFHOME = '/opt/render/project/texmf';
+process.env.PATH = `/opt/render/project/texlive/bin/x86_64-linux:${process.env.PATH}`;
+
 dotenv.config();
 
 const app = express();
@@ -29,14 +33,8 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Get pdflatex path
-let pdflatexPath;
-try {
-  pdflatexPath = '/opt/render/project/texlive/bin/x86_64-linux/pdflatex';
-  console.log('Using pdflatex at:', pdflatexPath);
-} catch (error) {
-  console.error('Error finding pdflatex:', error);
-  process.exit(1);
-}
+const pdflatexPath = '/opt/render/project/texlive/bin/x86_64-linux/pdflatex';
+console.log('Using pdflatex at:', pdflatexPath);
 
 // Routes
 app.get('/', (req, res) => {
@@ -47,7 +45,6 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK' });
 });
 
-// Test endpoint to check if POST requests work
 app.post('/test', (req, res) => {
   res.status(200).json({ message: 'POST request successful' });
 });
@@ -62,6 +59,7 @@ app.post('/compile', async (req, res) => {
   const workDir = path.join(tempDir, `${timestamp}`);
 
   try {
+    // Create working directory
     await fs.mkdir(workDir, { recursive: true });
     const texFile = path.join(workDir, 'resume.tex');
     await fs.writeFile(texFile, latex);
@@ -70,25 +68,42 @@ app.post('/compile', async (req, res) => {
     console.log('TeX file path:', texFile);
     console.log('Using pdflatex path:', pdflatexPath);
 
-    await new Promise((resolve, reject) => {
-      exec(
-        `${pdflatexPath} -interaction=nonstopmode -output-directory=${workDir} ${texFile}`,
-        (error, stdout, stderr) => {
-          if (error) {
-            console.error('LaTeX compilation error:', error);
-            console.error('stdout:', stdout);
-            console.error('stderr:', stderr);
-            reject(new Error(`PDF compilation failed: ${stderr || stdout}`));
-            return;
+    // Run pdflatex twice to resolve references
+    for (let i = 0; i < 2; i++) {
+      await new Promise((resolve, reject) => {
+        const env = {
+          ...process.env,
+          TEXMFHOME: '/opt/render/project/texmf',
+          PATH: `/opt/render/project/texlive/bin/x86_64-linux:${process.env.PATH}`
+        };
+
+        exec(
+          `${pdflatexPath} -interaction=nonstopmode -output-directory=${workDir} ${texFile}`,
+          { env },
+          (error, stdout, stderr) => {
+            if (error) {
+              console.error('LaTeX compilation error:', error);
+              console.error('stdout:', stdout);
+              console.error('stderr:', stderr);
+              reject(new Error(`PDF compilation failed: ${stderr || stdout}`));
+              return;
+            }
+            resolve();
           }
-          resolve();
-        }
-      );
-    });
+        );
+      });
+    }
 
+    // Check if PDF was generated
     const pdfPath = path.join(workDir, 'resume.pdf');
-    const pdfContent = await fs.readFile(pdfPath);
+    try {
+      await fs.access(pdfPath);
+    } catch (error) {
+      throw new Error('PDF file was not generated');
+    }
 
+    // Read and send the PDF
+    const pdfContent = await fs.readFile(pdfPath);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=resume.pdf');
     res.send(pdfContent);
@@ -97,8 +112,19 @@ app.post('/compile', async (req, res) => {
     console.error('Server error:', error);
     res.status(500).json({ 
       error: 'PDF generation failed', 
-      details: error.message 
+      details: error.message,
+      workDir: workDir // Include work directory for debugging
     });
+
+    // For debugging - try to read the log file if it exists
+    try {
+      const logFile = path.join(workDir, 'resume.log');
+      const logContent = await fs.readFile(logFile, 'utf8');
+      console.error('LaTeX log file contents:', logContent);
+    } catch (logError) {
+      console.error('Could not read log file:', logError);
+    }
+
   } finally {
     // Clean up temporary files
     try {
