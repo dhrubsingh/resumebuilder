@@ -218,7 +218,7 @@ ${formData.awards.map(award => `
         console.error('Server response:', errorData); // Add this line
         throw new Error(errorData.details || 'Failed to generate PDF');
       }
-
+  
       const pdfBlob = await response.blob();
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
