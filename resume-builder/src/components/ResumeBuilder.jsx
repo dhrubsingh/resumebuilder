@@ -198,6 +198,7 @@ ${formData.awards.map(award => `
 
   const handleGeneratePDF = async () => {
     try {
+      console.log('API URL:', import.meta.env.VITE_API_URL); // Add this line
       const latex = generateLatex();
       const response = await fetch(`${import.meta.env.VITE_API_URL}/compile`, {
         method: 'POST',

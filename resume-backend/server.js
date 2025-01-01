@@ -14,9 +14,10 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ['https://resumebuilder-givmxabei-dhrubsinghs-projects.vercel.app', process.env.FRONTEND_URL].filter(Boolean),
-    methods: ['POST', 'GET'],
+    origin: '*',  // temporarily allow all origins
+    methods: ['POST', 'GET', 'OPTIONS'],
     allowedHeaders: ['Content-Type'],
+    credentials: true
   }));
 
 // Add these lines
@@ -35,6 +36,14 @@ async function cleanupTempFiles(directory) {
     console.error('Cleanup error:', error);
   }
 }
+
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'Resume Builder API is running' });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
+});
 
 app.post('/compile', async (req, res) => {
   const { latex } = req.body;
@@ -91,11 +100,6 @@ app.post('/compile', async (req, res) => {
     // Clean up temporary files
     await cleanupTempFiles(workDir);
   }
-});
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK' });
 });
 
 // Error handling middleware
