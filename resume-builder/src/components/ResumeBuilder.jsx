@@ -198,8 +198,13 @@ ${formData.awards.map(award => `
 
   const handleGeneratePDF = async () => {
     try {
+      console.log('Attempting to generate PDF...');
       console.log('API URL:', import.meta.env.VITE_API_URL); // Add this line
       const latex = generateLatex();
+      
+      // Add this log to see the LaTeX content
+      console.log('LaTeX content length:', latex.length);
+      
       const response = await fetch(`${import.meta.env.VITE_API_URL}/compile`, {
         method: 'POST',
         headers: {
@@ -210,6 +215,7 @@ ${formData.awards.map(award => `
   
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Server response:', errorData); // Add this line
         throw new Error(errorData.details || 'Failed to generate PDF');
       }
 
