@@ -1,22 +1,37 @@
 #!/bin/bash
 
-# Add environment check
 echo "Current user: $(whoami)"
 echo "Current directory: $(pwd)"
 
-# Create a temporary directory with write permissions
-TEMP_DIR=$(mktemp -d)
-echo "Created temporary directory: $TEMP_DIR"
+# Create a local bin directory
+mkdir -p $HOME/.local/bin
+export PATH="$HOME/.local/bin:$PATH"
 
-# Update package list and install required packages
-echo "Installing LaTeX packages..."
-apt-get update -y || { echo "Failed to update package list"; exit 1; }
+# Download and install TeXLive installer
+echo "Downloading TeXLive installer..."
+wget https://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz
+tar -xzf install-tl-unx.tar.gz
+cd install-tl-*
 
-DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    texlive-latex-base \
-    texlive-fonts-recommended \
-    texlive-fonts-extra \
-    texlive-latex-extra
+# Create a texlive.profile file
+cat > texlive.profile << EOF
+selected_scheme scheme-basic
+TEXDIR $HOME/.texlive
+TEXMFCONFIG $HOME/.texlive/texmf-config
+TEXMFHOME $HOME/.texlive/texmf
+TEXMFLOCAL $HOME/.texlive/texmf-local
+TEXMFSYSCONFIG $HOME/.texlive/texmf-config
+TEXMFSYSVAR $HOME/.texlive/texmf-var
+TEXMFVAR $HOME/.texlive/texmf-var
+option_doc 0
+option_src 0
+EOF
+
+# Install TeXLive with the profile
+./install-tl --profile=texlive.profile
+
+# Add TeXLive to PATH
+export PATH="$HOME/.texlive/bin/x86_64-linux:$PATH"
 
 # Verify pdflatex installation
 which pdflatex || { echo "pdflatex not found in PATH"; exit 1; }
