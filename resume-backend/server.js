@@ -6,12 +6,15 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Vite's default port
+  origin: process.env.FRONTEND_URL || '*',
   methods: ['POST', 'GET'],
   allowedHeaders: ['Content-Type'],
 }));
