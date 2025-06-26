@@ -20,6 +20,7 @@ const ResumeBuilder = () => {
       email: '',
       linkedin: ''
     },
+    summary: '',
     education: [{
       school: '',
       location: '',
@@ -54,6 +55,13 @@ const ResumeBuilder = () => {
     setFormData(prev => ({
       ...prev,
       [section]: data
+    }));
+  };
+
+  const handleSummaryChange = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      summary: value
     }));
   };
 
@@ -147,6 +155,10 @@ const ResumeBuilder = () => {
       `\\href{${formData.personalInfo.linkedin}}{\\underline{${formData.personalInfo.linkedin.replace('https://', '')}}}`
     ].filter(Boolean).join(' $|$ ')}
 \\end{center}
+
+${formData.summary ? `\\vspace{2pt}
+\\noindent\\textit{${formData.summary}}
+\\vspace{8pt}` : ''}
 
 %-----------EDUCATION-----------
 \\section{Education}
@@ -295,6 +307,8 @@ ${formData.awards.map(award => `
               <PersonalInfoForm 
                 data={formData.personalInfo}
                 onUpdate={(data) => handleFormUpdate('personalInfo', data)}
+                summary={formData.summary}
+                onSummaryChange={handleSummaryChange}
               />
             </TabsContent>
 

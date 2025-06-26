@@ -26,6 +26,13 @@ const ResumePreview = ({ formData }) => {
         </div>
       </div>
 
+      {/* Professional Summary */}
+      {formData.summary && (
+        <div className="text-center mb-6">
+          <p className="italic text-[11pt] text-gray-700 max-w-2xl mx-auto">{formData.summary}</p>
+        </div>
+      )}
+
       {/* Education Section */}
       <div className="mb-4">
         <h2 className="text-[14pt] font-normal tracking-wide border-b border-black pb-[2pt] mb-[8pt] uppercase">
